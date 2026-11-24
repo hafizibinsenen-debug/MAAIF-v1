@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Framework Pilot Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, orderly, a staff-room workshop with a sense of occasion
+   IDEA: a madrasah exercise book — numbered questions, then a shared planning sheet
+   PICTURE: a band of eight-point khatam stars across the top; the working form is the main picture
+   COLOUR and TYPE: deep madrasah green, white paper, one coral accent for "correct"/actions; Manrope throughout
+   LAYOUT: slim header band, one calm column for teachers; wide two-pane board for the facilitator */
+:root{color-scheme:light dark;
+--bg:light-dark(#f6f7f5,#0d1512);--paper:light-dark(#ffffff,#15211c);--ink:light-dark(#13201b,#e8efeb);
+--soft:light-dark(#5a6b64,#9fb2aa);--line:light-dark(#dde4e0,#26362f);--green:#0e4d3c;--green2:light-dark(#e3efe9,#1b3a30);
+--accent:#d9472b;--accentSoft:light-dark(#fbe6e1,#3a1f19);--ok:light-dark(#0e7a52,#4cc597);--okSoft:light-dark(#dcf3e8,#173a2c)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Manrope,system-ui,sans-serif;overflow-x:clip}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{background:var(--green);color:#fff;position:relative;overflow:hidden}
+.top svg.pat{position:absolute;inset:0;width:100%;height:100%;opacity:.22}
+.topin{position:relative;max-width:1240px;margin:0 auto;padding:22px max(5vw,16px) 0}
+.brand{font-size:13px;opacity:.85;font-weight:600}
+h1{font-size:clamp(26px,4vw,40px);line-height:1.08;margin:4px 0 6px;text-wrap:balance}
+.who{font-size:14px;opacity:.9;min-height:22px}
+.tabs{display:flex;gap:4px;margin-top:16px;flex-wrap:wrap}
+.tab{border:0;background:transparent;color:#fff;padding:12px 18px;border-radius:10px 10px 0 0;font-weight:700;cursor:pointer;min-height:44px;opacity:.8}
+.tab[aria-selected=true]{background:var(--bg);color:var(--ink);opacity:1}
+.tab:focus-visible,.btn:focus-visible,.opt:focus-within,.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:1240px;margin:0 auto;padding:28px max(5vw,16px) 60px}
+.col{max-width:760px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+h2{font-size:24px;line-height:1.15;margin:0 0 6px}
+h3{font-size:17px;margin:0 0 10px;line-height:1.35}
+.muted{color:var(--soft);font-size:14px}
+.qn{display:inline-block;font-weight:800;color:var(--green);margin-right:6px}
+:root[data-theme=dark] .qn{color:#6fd1ab}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .qn{color:#6fd1ab}}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:pointer;min-height:44px}
+.opt input{margin-top:4px;width:18px;height:18px;accent-color:var(--green);flex:none}
+.opt.sel{border-color:var(--green);background:var(--green2)}
+.opt.right{border-color:var(--ok);background:var(--okSoft)}
+.opt.wrong{border-color:var(--accent);background:var(--accentSoft)}
+.why{margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px;background:var(--green2)}
+textarea,input[type=text],input[type=password]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:12px 14px;font-size:16px}
+textarea{min-height:110px;resize:vertical}
+textarea:focus,input:focus{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);border-color:var(--green)}
+.btn{border:0;background:var(--green);color:#fff;font-weight:700;padding:12px 20px;border-radius:10px;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.warm{background:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid6{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px;margin-top:10px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:12px 14px;text-align:left;cursor:pointer;font-weight:700;min-height:44px}
+.chip small{display:block;font-weight:500;color:var(--soft);font-size:13px}
+.chip[aria-pressed=true]{border-color:var(--green);background:var(--green2)}
+.banner{padding:12px 16px;border-radius:10px;background:var(--accentSoft);margin-bottom:16px;font-size:15px}
+.banner.ok{background:var(--okSoft)}
+.hidden{display:none!important}
+.field label{font-weight:800;display:block;font-size:17px}
+.field .meta{font-size:13px;color:var(--soft);margin:2px 0 8px;min-height:18px}
+.hintbtn{background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer;padding:6px 0;min-height:36px;font-size:14px}
+.hint{font-size:14px;border-left:3px solid var(--accent);padding:6px 12px;margin:6px 0;background:var(--accentSoft);border-radius:0 8px 8px 0}
+.save{font-size:13px;color:var(--soft)}
+/* facilitator */
+.fgrid{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px}
+@media(max-width:860px){.fgrid{grid-template-columns:minmax(0,1fr)}}
+.side .card{padding:16px}
+.stat{font-size:clamp(30px,4vw,44px);font-weight:800;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 54px;gap:10px;align-items:center;margin:7px 0;font-size:14px}
+.track{background:var(--green2);border-radius:6px;height:30px;position:relative;overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;background:color-mix(in srgb,var(--soft) 45%,transparent)}
+.fill.c{background:var(--ok)}
+.track span{position:absolute;left:10px;top:50%;transform:translateY(-50%);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 16px);font-weight:600}
+.pct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
+.note{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--green);border-radius:10px;padding:14px 16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note b{display:block;font-size:13px;color:var(--soft);margin-bottom:4px;white-space:normal}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg .chip{padding:8px 12px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.planview .pf{margin-bottom:14px}
+.planview .pf h3{margin-bottom:4px;color:var(--green)}
+.planview .pf div{white-space:pre-wrap;overflow-wrap:anywhere}
+body.big main{font-size:20px}body.big .note{font-size:21px}body.big .planview .pf div{font-size:22px}body.big h3{font-size:22px}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;font-weight:600}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+footer{max-width:1240px;margin:0 auto;padding:0 max(5vw,16px) 40px;font-size:13px;color:var(--soft)}
+footer button{background:none;border:0;color:var(--soft);text-decoration:underline;cursor:pointer;min-height:44px;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px;z-index:5}
+.modal .card{width:min(420px,100%)}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal}.stack td:empty{display:none}.stats{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+</style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script></head>
+<body>
+<header class="top">
+  <svg class="pat" aria-hidden="true"><defs><pattern id="k" width="56" height="56" patternUnits="userSpaceOnUse"><g fill="none" stroke="#fff" stroke-width="1.3" transform="translate(28 28)"><rect x="-14" y="-14" width="28" height="28"/><rect x="-14" y="-14" width="28" height="28" transform="rotate(45)"/><circle r="5"/></g></pattern></defs><rect width="100%" height="100%" fill="url(#k)"/></svg>
+  <div class="topin">
+    <div class="brand">Madrasah Alsagoff Al-Arabiah · AI &amp; EdTech Framework</div>
+    <h1>Pilot Workshop</h1>
+    <div class="who" id="who"></div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-v="p1" aria-selected="false">Part 1 · Check your understanding</button>
+      <button class="tab" role="tab" data-v="p2" aria-selected="false">Part 2 · Group lesson plan</button>
+      <button class="tab hidden" role="tab" data-v="fac" aria-selected="false" id="facTab">Facilitator</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="status" class="banner hidden"></div>
+
+  <!-- JOIN -->
+  <section id="v-join" class="col hidden">
+    <div class="card">
+      <h2>Assalamualaikum! Let's get started</h2>
+      <p class="muted">No password needed. Type your name and pick your group.</p>
+      <label for="nm" style="font-weight:700">Your name</label>
+      <input type="text" id="nm" autocomplete="name" placeholder="e.g. Ustazah Aisyah" maxlength="60" style="margin-top:6px">
+      <div style="font-weight:700;margin-top:16px">Your group</div>
+      <div class="grid6" id="grpPick"></div>
+      <div class="row" style="margin-top:18px"><button class="btn" id="joinBtn">Continue</button><span class="muted" id="joinMsg"></span></div>
+    </div>
+  </section>
+
+  <!-- PART 1 -->
+  <section id="v-p1" class="col hidden">
+    <div class="card" style="background:var(--green2);border-color:transparent">
+      <h2>Part 1 · Check your understanding</h2>
+      <p style="margin:0">Answer on your own. There are 7 multiple-choice questions on the framework and 3 short questions on using it in your classroom. You can change your answers and submit again.</p>
+    </div>
+    <div id="mcqs"></div>
+    <div id="opens"></div>
+    <div class="row"><button class="btn" id="submitBtn">Submit my answers</button><span class="save" id="subMsg"></span></div>
+  </section>
+
+  <!-- PART 2 -->
+  <section id="v-p2" class="col hidden">
+    <div id="p2wait" class="card hidden"><h2>Part 2 will open shortly</h2><p class="muted" style="margin:0">Your facilitator will open the group task after Part 1. This page will change on its own.</p></div>
+    <div id="p2body">
+      <div class="card" style="background:var(--green2);border-color:transparent">
+        <h2 id="p2title">Part 2 · Group lesson plan</h2>
+        <p style="margin:0">Plan <b>one pilot lesson</b> for your context. Everyone in your group can type, and changes save automatically. Stuck? Open the hints under each box.</p>
+        <div class="row" style="margin-top:12px"><span class="muted">Working on:</span><select id="grpSel" style="padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);min-height:44px"></select></div>
+      </div>
+      <div id="canvas"></div>
+    </div>
+  </section>
+
+  <!-- FACILITATOR -->
+  <section id="v-fac" class="hidden">
+    <div class="fgrid">
+      <aside class="side">
+        <div class="card">
+          <h3>Teachers' screens</h3>
+          <div class="seg" id="phaseSeg">
+            <button class="chip" data-ph="p1" aria-pressed="false">Part 1</button>
+            <button class="chip" data-ph="p2" aria-pressed="false">Part 2</button>
+          </div>
+          <label class="toggle" style="margin-top:8px"><input type="checkbox" id="revealT"> Show correct answers to teachers</label>
+          <label class="toggle"><input type="checkbox" id="bigT"> Projector mode (large text)</label>
+          <p class="save" id="ctlMsg"></p>
+        </div>
+        <div class="card">
+          <h3>Show</h3>
+          <div class="seg" id="facNav" style="flex-direction:column">
+            <button class="chip" data-f="mcq" aria-pressed="true">MCQ results</button>
+            <button class="chip" data-f="open" aria-pressed="false">Open-ended answers</button>
+            <button class="chip" data-f="people" aria-pressed="false">Who has submitted</button>
+            <button class="chip" data-f="plans" aria-pressed="false">Group lesson plans</button>
+          </div>
+        </div>
+        <a class="btn ghost hidden" id="sheetLink" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">Open the Google Sheet</a>
+        <p class="save">All answers and plans are saved in the Google Sheet too.</p>
+      </aside>
+      <div>
+        <div id="f-mcq"></div>
+        <div id="f-open" class="hidden"></div>
+        <div id="f-people" class="hidden"></div>
+        <div id="f-plans" class="hidden"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><span>Tradition rooted, future ready.</span> · <button id="facLink">Facilitator login</button> · <button id="changeMe">Change name or group</button></footer>
+
+<div class="modal hidden" id="pwModal" role="dialog" aria-modal="true" aria-labelledby="pwH">
+  <div class="card">
+    <h2 id="pwH">Facilitator login</h2>
+    <p class="muted">Enter the facilitator password.</p>
+    <input type="password" id="pw" autocomplete="current-password">
+    <div class="row" style="margin-top:12px"><button class="btn" id="pwGo">Unlock</button><button class="btn ghost" id="pwX">Cancel</button><span class="save" id="pwMsg"></span></div>
+  </div>
+</div>
+
+<script>
+{
+const GROUPS=[
+ {id:"ark-lower",name:"ARK Lower",sub:"Islamic studies, lower levels"},
+ {id:"ark-upper",name:"ARK Upper",sub:"Islamic studies, upper levels"},
+ {id:"pri-lower",name:"Primary Lower",sub:"P1 to P3"},
+ {id:"pri-upper",name:"Primary Upper",sub:"P4 to P6"},
+ {id:"sec-lower",name:"Secondary Lower",sub:"Sec 1 to Sec 2"},
+ {id:"sec-upper",name:"Secondary Upper",sub:"Sec 3 to Sec 4"}];
+const gName=id=>(GROUPS.find(g=>g.id===id)||{}).name||"No group";
+
+/* Correct answers and explanations live in code.gs and are sent only when the facilitator reveals them. */
+const MCQ=[
+ {q:"The framework's vision aims to strengthen which two dimensions of learning together?",o:["Academic and co-curricular","Duniawi (worldly) and ukhrawi (spiritual)","Digital and physical","Local and global"]},
+ {q:"\"Use AI to enhance learning, not replace thinking.\" Which value under Adab & Amanah does this describe?",o:["Amanah (trust)","Niyyah (intention)","Ihsan (excellence)","Adl (justice)"]},
+ {q:"A student pastes an AI-generated quotation into her essay without checking it or citing the tool. Which value is most directly breached?",o:["Ihsan (excellence)","Adl (justice)","Amanah (trust)","Niyyah (intention)"]},
+ {q:"A teacher sets AI-based homework, but several students have no device at home. Which value asks her to rethink the plan?",o:["Mas'uliyyah (responsibility)","Adl (justice)","Ihsan (excellence)","Niyyah (intention)"]},
+ {q:"A teacher often uses AI to help design her lessons, but does not yet use data to make instructional decisions. Which competency level is she at?",o:["Emerging","Developing","Proficient","Transformative"]},
+ {q:"Which of these belongs to Phase 1 (Foundation) of the 2026 to 2028 roadmap?",o:["Dashboard implementation","Pilot classrooms","Predictive analytics","Curriculum embedding"]},
+ {q:"Before putting student work that includes names into an AI tool, Pillar 7 expects data governance aligned with:",o:["Singapore's PDPA","The AI tool's own privacy policy only","Nothing, because classroom use is exempt","The student's own preference"]}];
+const OPEN=[
+ "Describe one way you could use AI in a lesson you teach soon. Which pedagogical model would it support (for example, Productive Failure, Inquiry-Based Learning or Flipped Classroom)?",
+ "Which Adab & Amanah risk worries you most in your subject? How would you guard against it?",
+ "After 4 weeks, what would tell you that AI made a real difference to your students' learning?"];
+
+const FIELDS=[
+ {id:"title",label:"Lesson title, subject and level",ph:"e.g. Sec 2 Physics: Why do objects float?",h:["Choose a lesson you will actually teach in the next 4 to 6 weeks, so the pilot is real.","Keep it to one lesson or a short sequence of 2 to 3 lessons. Small is easier to try out."]},
+ {id:"objective",label:"Learning objective(s)",ph:"By the end of the lesson, students will be able to…",h:["Start with 'Students will be able to…' and use a verb you can observe: explain, compare, recite, apply.","One or two objectives are enough. The AI tool should serve the objective, not the other way round."]},
+ {id:"problem",label:"Problem of practice",ph:"What learning challenge does this lesson address?",h:["Think of a challenge you see every year: a common misconception, a skill that is hard to practise, or students who need different levels of support."],g:true},
+ {id:"pillars",label:"Framework pillars",ph:"Pillar 1 (Islamic AI Ethics) plus…",h:["Pillar 1 is part of every pilot. Add one or two more: Teaching & Learning (2), Teacher Empowerment (3), Student AI Literacy (4), Leadership & Character (5), Analytics (6), Infrastructure (7).","Don't tick every box. Pick the pillars this lesson can really show."]},
+ {id:"flow",label:"Lesson flow and pedagogy",ph:"Opening (…min) → Main activity (…min) → Closure (…min). Model used: …",h:["Name one model from Pillar 2: Productive Failure, Flipped Classroom, Inquiry-Based Learning, Socratic Discussion, Mastery Learning or UDL.","Mark the exact moment AI comes in, and what students or the teacher do just before and after it.","Productive Failure tip: let students struggle with the problem first, then use AI for feedback or consolidation, not to give the answer."]},
+ {id:"ai",label:"AI tool and who uses it",ph:"Tool: …  Used by: teacher only / students with guidance / students independently.  Purpose: …",h:["Choose from the recommended tools: Claude, ChatGPT, Gamma, NotebookLM, Kahoot!, Quizizz or Canva for Education.","Be clear about who touches the AI: the teacher only (preparing materials) or students (guided or independent)."],g:true},
+ {id:"adab",label:"Adab and Amanah safeguards",ph:"How will we make sure AI use stays honest, accurate, fair and safe?",h:["Go through the five values: Niyyah, Amanah, Adl, Ihsan, Mas'uliyyah. Which one is most at risk in this lesson?","Include a verification step (tabayyun): who checks the AI output, and against what?","Privacy: no student names or personal details go into the tool."],g:true},
+ {id:"evidence",label:"Evidence of success",ph:"We will know it worked if…",h:["Give one sign for each of three KPIs: teacher adoption, student learning (mastery or transfer) and efficiency (preparation time saved).","Choose evidence you can collect easily: an exit ticket, a comparison with last year's class, minutes saved, or short student reflections."]}];
+
+const GHINT={
+ "ark-lower":{problem:"Ideas: memorising Arabic vocabulary, learning du'a with understanding, or practising Jawi. Most of these need lots of repetition.",ai:"Start with the teacher only: use AI to generate vocabulary practice or differentiated worksheets. Students don't need to touch AI yet.",adab:"AI is never a source of religious rulings. The teacher checks every Arabic or religious text before it reaches students."},
+ "ark-upper":{problem:"Ideas: connecting tafsir to students' lives, structuring a reflection on an ayah, or preparing for discussion.",ai:"Consider AI-assisted tafsir presentations or the 'AI for Quranic Reflection' initiative. Students use AI under guidance and with clear limits.",adab:"Essential: AI does not give fatwa or rulings. Every output is checked against established (muktabar) sources, which is tabayyun. Discuss with students why this matters."},
+ "pri-lower":{problem:"Ideas: wide differences in reading level, keeping young learners engaged, or preparing visual materials quickly.",ai:"Teacher only. Use AI to simplify texts, make visuals in Canva, or create levelled worksheets. P1 to P3 students should not use AI accounts.",adab:"Check all AI-made content for accuracy and age-appropriateness. Make sure the images and examples suit Islamic values."},
+ "pri-upper":{problem:"Ideas: PSLE comprehension skills, practising problem sums, or giving quick formative feedback.",ai:"Guided student use, for example a Kahoot! or Quizizz round, or a first 'prompt with integrity' activity. You could also try the Comprehension Question Generator.",adab:"Teach a simple rule students can remember, such as: 'AI helps me think. I still check and say where it came from.'"},
+ "sec-lower":{problem:"Ideas: science misconceptions, students who give up after the first attempt, or building the habit of explaining their reasoning.",ai:"Productive Failure with AI feedback, or a pilot of the Science Misconception Analyzer. This is a good group to launch the student AI ethics module.",adab:"Students check AI answers against their textbook or notes and spot at least one error or gap (hallucinations and bias)."},
+ "sec-upper":{problem:"Ideas: O-Level argumentative writing, research skills, or judging how reliable a source is.",ai:"Students use AI to prepare for debates, critique an AI answer, or practise research and citation. Digital Da'wah content creation is a stretch goal.",adab:"Have students submit their prompts and their verification steps together with the final work, so academic integrity is visible."}};
+
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+/* Back end: Google Apps Script web app (code.gs). text/plain avoids a CORS preflight, which Apps Script can't answer. */
+const API="https://script.google.com/macros/s/AKfycbx1WI8n84mBYXrZDVBesr3Zr_w5Eq_I9kMINu7eLfr-zLZfY87_tXqFyM-4jhHop_ST/exec";
+const hasGAS=true;
+async function run(fn,...args){
+  const r=await fetch(API,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn,args})});
+  let j;try{j=await r.json()}catch(e){throw new Error("The server didn't reply properly. Check that code.gs is deployed as a new version.")}
+  if(!j.ok)throw new Error(j.error||"Server error");
+  return j.data;
+}
+
+/* anonymous device id: lets a teacher edit their own submission without any login */
+let myId=LS.get("mapw_id");
+if(!myId){myId=(Date.now().toString(36)+Math.random().toString(36).slice(2,12)).replace(/[^a-z0-9]/g,"");LS.set("mapw_id",myId)}
+
+let me=LS.get("mapw_me")||{name:"",group:""};
+let ans={mcq:Array(MCQ.length).fill(null),open:Array(OPEN.length).fill("")};
+let submitted=false,ctl={phase:"p1",reveal:false},key=null,view="p1";
+let token=null,admin=null;
+let plans={},planGroup=me.group||GROUPS[0].id,facSec="mcq",openQ=0,openG="all",planG=GROUPS[0].id;
+
+function status(msg,ok){const s=$("#status");if(!msg){s.classList.add("hidden");return}s.textContent=msg;s.classList.toggle("ok",!!ok);s.classList.remove("hidden")}
+
+/* ---------- views ---------- */
+function show(v){
+  if(v==="fac"&&!token)v="p1";
+  if(!me.name&&v!=="fac")v="join";
+  view=v;
+  ["join","p1","p2","fac"].forEach(x=>$("#v-"+x).classList.toggle("hidden",x!==v));
+  $$(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
+  $("#tabs").classList.toggle("hidden",v==="join");
+  $("#who").textContent=me.name?`${me.name} · ${gName(me.group)}`:"";
+  if(v==="p1")renderP1();
+  if(v==="p2"){renderP2();pollPlans()}
+  if(v==="fac"){renderFac();pollAdmin()}
+}
+$$(".tab").forEach(t=>t.addEventListener("click",()=>show(t.dataset.v)));
+
+/* ---------- join ---------- */
+function renderJoin(){
+  $("#nm").value=me.name||"";
+  $("#grpPick").innerHTML=GROUPS.map(g=>`<button class="chip" data-g="${g.id}" aria-pressed="${me.group===g.id}">${esc(g.name)}<small>${esc(g.sub)}</small></button>`).join("");
+}
+$("#grpPick").addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;me.group=b.dataset.g;$$("#grpPick .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))});
+$("#joinBtn").addEventListener("click",()=>{
+  const n=$("#nm").value.trim();
+  if(!n){$("#joinMsg").textContent="Please type your name.";return}
+  if(!me.group){$("#joinMsg").textContent="Please pick your group.";return}
+  me.name=n;LS.set("mapw_me",me);planGroup=me.group;$("#joinMsg").textContent="";
+  show(ctl.phase==="p2"?"p2":"p1");
+});
+$("#changeMe").addEventListener("click",()=>{renderJoin();view="join";["join","p1","p2","fac"].forEach(x=>$("#v-"+x).classList.toggle("hidden",x!=="join"));$("#tabs").classList.add("hidden")});
+
+/* ---------- part 1 ---------- */
+function renderP1(){
+  const rev=ctl.reveal&&submitted&&key;
+  $("#mcqs").innerHTML=MCQ.map((m,i)=>`<div class="card"><h3><span class="qn">${i+1}.</span>${esc(m.q)}</h3>${m.o.map((o,j)=>{
+    let cls=ans.mcq[i]===j?"sel":"";
+    if(rev){if(j===key.answers[i])cls="right";else if(ans.mcq[i]===j)cls="wrong"}
+    return `<label class="opt ${cls}"><input type="radio" name="q${i}" value="${j}" ${ans.mcq[i]===j?"checked":""}><span>${esc(o)}</span></label>`}).join("")}
+    ${rev?`<div class="why">${ans.mcq[i]===key.answers[i]?"✓ Correct. ":"Answer: "+esc(m.o[key.answers[i]])+". "}${esc(key.why[i])}</div>`:""}</div>`).join("");
+  $("#opens").innerHTML=OPEN.map((q,i)=>`<div class="card"><h3><span class="qn">${MCQ.length+i+1}.</span>${esc(q)}</h3><textarea data-o="${i}" maxlength="1500" placeholder="Type your answer…">${esc(ans.open[i])}</textarea></div>`).join("");
+  $("#submitBtn").textContent=submitted?"Update my answers":"Submit my answers";
+}
+$("#mcqs").addEventListener("change",e=>{const r=e.target;if(r.name&&r.name[0]==="q"){const i=+r.name.slice(1);ans.mcq[i]=+r.value;$$(`input[name=q${i}]`).forEach(x=>x.closest(".opt").classList.toggle("sel",x.checked));LS.set("mapw_ans",ans)}});
+$("#opens").addEventListener("input",e=>{const t=e.target;if(t.dataset.o!=null){ans.open[+t.dataset.o]=t.value;LS.set("mapw_ans",ans)}});
+$("#submitBtn").addEventListener("click",async()=>{
+  const miss=ans.mcq.findIndex(x=>x===null);
+  if(miss>-1){$("#subMsg").textContent=`Please answer question ${miss+1}.`;return}
+  $("#submitBtn").disabled=true;$("#subMsg").textContent="Saving…";
+  try{await run("submitResponse",{id:myId,name:me.name,group:me.group,mcq:ans.mcq,open:ans.open});
+    submitted=true;LS.set("mapw_sub",true);$("#subMsg").textContent="Submitted ✓ JazakAllahu khairan. You can still edit and update.";renderP1();
+  }catch(e){$("#subMsg").textContent="Couldn't save: "+(e&&e.message?e.message:"please try again.")}
+  $("#submitBtn").disabled=false;
+});
+
+/* ---------- part 2 ---------- */
+function renderP2(){
+  const open=ctl.phase==="p2"||!!token;
+  $("#p2wait").classList.toggle("hidden",open);$("#p2body").classList.toggle("hidden",!open);
+  if(!open)return;
+  $("#grpSel").innerHTML=GROUPS.map(g=>`<option value="${g.id}" ${g.id===planGroup?"selected":""}>${esc(g.name)}</option>`).join("");
+  $("#p2title").textContent=`Part 2 · ${gName(planGroup)} lesson plan`;
+  const gh=GHINT[planGroup]||{};
+  $("#canvas").innerHTML=FIELDS.map((f,i)=>{
+    const d=plans[planGroup+"__"+f.id];const hints=[...(f.g&&gh[f.id]?[`For ${gName(planGroup)}: ${gh[f.id]}`]:[]),...f.h];
+    return `<div class="card field"><label for="f-${f.id}"><span class="qn">${i+1}.</span>${esc(f.label)}</label>
+    <div class="meta" id="m-${f.id}">${d&&d.by?"Last edited by "+esc(d.by):""}</div>
+    <textarea id="f-${f.id}" data-f="${f.id}" maxlength="4000" placeholder="${esc(f.ph)}">${esc(d?d.text:"")}</textarea>
+    <div data-hints="${f.id}" data-shown="0"></div>
+    <button class="hintbtn" data-hint="${f.id}">Show a hint (${hints.length} available)</button></div>`}).join("");
+}
+$("#grpSel").addEventListener("change",e=>{planGroup=e.target.value;renderP2()});
+$("#canvas").addEventListener("click",e=>{
+  const b=e.target.closest("[data-hint]");if(!b)return;
+  const f=FIELDS.find(x=>x.id===b.dataset.hint),gh=GHINT[planGroup]||{};
+  const hints=[...(f.g&&gh[f.id]?[`For ${gName(planGroup)}: ${gh[f.id]}`]:[]),...f.h];
+  const box=$(`[data-hints="${f.id}"]`),n=+box.dataset.shown;
+  if(n>=hints.length)return;
+  const p=document.createElement("div");p.className="hint";p.textContent=hints[n];box.appendChild(p);box.dataset.shown=n+1;
+  const left=hints.length-n-1;b.textContent=left?`Show another hint (${left} left)`:"No more hints";b.disabled=!left;
+});
+const timers={},saving={},dirty={},typing={};
+$("#canvas").addEventListener("input",e=>{const t=e.target;if(!t.dataset.f)return;const k=planGroup+"__"+t.dataset.f;typing[k]=true;$("#m-"+t.dataset.f).textContent="Typing…";clearTimeout(timers[k]);timers[k]=setTimeout(()=>savePlan(planGroup,t.dataset.f),1500)});
+$("#canvas").addEventListener("focusout",e=>{const t=e.target;if(!t.dataset.f)return;const k=planGroup+"__"+t.dataset.f;if(timers[k]){clearTimeout(timers[k]);savePlan(planGroup,t.dataset.f)}});
+async function savePlan(g,fid){
+  const k=g+"__"+fid,ta=$("#f-"+fid);if(!ta||g!==planGroup)return;delete timers[k];
+  const text=ta.value;
+  if(saving[k]){dirty[k]=true;return}
+  if(plans[k]&&plans[k].text===text){typing[k]=false;const m=$("#m-"+fid);if(m)m.textContent="Saved ✓";return}
+  saving[k]=true;
+  try{await run("savePlanField",g,fid,text,me.name||"Someone");plans[k]={text,by:me.name};const m=$("#m-"+fid);if(m)m.textContent="Saved ✓"}
+  catch(e){const m=$("#m-"+fid);if(m)m.textContent="Not saved. Keep typing and it will retry."}
+  saving[k]=false;typing[k]=false;
+  if(dirty[k]){dirty[k]=false;savePlan(g,fid)}
+}
+function applyPlans(fresh){
+  Object.keys(fresh).forEach(k=>{if(!typing[k]&&!saving[k])plans[k]=fresh[k]});
+  if(view==="p2"&&!$("#p2body").classList.contains("hidden")){
+    FIELDS.forEach(f=>{const k=planGroup+"__"+f.id,d=plans[k],ta=$("#f-"+f.id);if(!ta||!d||typing[k]||saving[k])return;
+      if(document.activeElement!==ta&&ta.value!==d.text){ta.value=d.text;$("#m-"+f.id).textContent="Last edited by "+(d.by||"Someone")}});
+  }
+}
+
+/* ---------- polling (Apps Script has no live push, so we check every few seconds) ---------- */
+let busyState=false,busyPlans=false,busyAdmin=false;
+async function pollState(){
+  if(busyState)return;busyState=true;
+  try{const s=await run("getState");status("");
+    const prev=ctl.phase,prevRev=ctl.reveal;ctl={phase:s.phase==="p2"?"p2":"p1",reveal:!!s.reveal};key=s.key||null;
+    if(prev!==ctl.phase&&me.name&&(view==="p1"||view==="p2"))show(ctl.phase);
+    else{if(view==="p1"&&prevRev!==ctl.reveal)renderP1();if(view==="p2"&&prev!==ctl.phase)renderP2()}
+    renderCtl();
+  }catch(e){status("Can't reach the server. Retrying… ("+String(e&&e.message||e).slice(0,140)+")")}
+  busyState=false;
+}
+async function pollPlans(){
+  if(busyPlans||view!=="p2"||$("#p2body").classList.contains("hidden"))return;busyPlans=true;
+  try{applyPlans(await run("getPlans",planGroup))}catch(e){}
+  busyPlans=false;
+}
+setInterval(pollState,8000);
+setInterval(pollPlans,5000);
+
+/* ---------- facilitator ---------- */
+$("#facLink").addEventListener("click",()=>{if(token){show("fac");return}$("#pwModal").classList.remove("hidden");$("#pw").value="";$("#pwMsg").textContent="";$("#pw").focus()});
+$("#pwX").addEventListener("click",()=>$("#pwModal").classList.add("hidden"));
+$("#pw").addEventListener("keydown",e=>{if(e.key==="Enter")$("#pwGo").click()});
+$("#pwGo").addEventListener("click",async()=>{
+  $("#pwGo").disabled=true;$("#pwMsg").textContent="Checking…";
+  try{token=await run("adminLogin",$("#pw").value);
+    $("#pwModal").classList.add("hidden");$("#facTab").classList.remove("hidden");$("#facLink").textContent="Facilitator dashboard";show("fac");
+  }catch(e){$("#pwMsg").textContent="Incorrect password."}
+  $("#pwGo").disabled=false;
+});
+async function pollAdmin(){
+  if(!token||view!=="fac"||busyAdmin)return;busyAdmin=true;
+  try{admin=await run("adminGetAll",token);ctl={phase:admin.state.phase,reveal:admin.state.reveal};
+    plans=admin.plans;if(admin.sheetUrl&&/^https:\/\//.test(admin.sheetUrl))$("#sheetLink").href=admin.sheetUrl;$("#sheetLink").classList.remove("hidden");
+    renderFac();
+  }catch(e){if(String(e&&e.message).includes("expired")){token=null;$("#facTab").classList.add("hidden");$("#facLink").textContent="Facilitator login";show("p1")}else $("#ctlMsg").textContent="Couldn't refresh. Retrying…"}
+  busyAdmin=false;
+}
+setInterval(pollAdmin,5000);
+$("#phaseSeg").addEventListener("click",e=>{const b=e.target.closest("[data-ph]");if(b)writeCtl({phase:b.dataset.ph})});
+$("#revealT").addEventListener("change",e=>writeCtl({reveal:e.target.checked}));
+$("#bigT").addEventListener("change",e=>document.body.classList.toggle("big",e.target.checked));
+let ctlBusy=false;
+async function writeCtl(p){
+  if(!token||ctlBusy)return;ctlBusy=true;
+  const next={...ctl,...p};$("#ctlMsg").textContent="Updating…";
+  try{await run("adminSetState",token,next.phase,!!next.reveal);ctl=next;$("#ctlMsg").textContent="Updated ✓ Teachers' screens follow within about 8 seconds."}
+  catch(e){$("#ctlMsg").textContent="Couldn't update. Try again."}
+  ctlBusy=false;renderCtl();
+}
+function renderCtl(){$$("#phaseSeg .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.ph===ctl.phase));$("#revealT").checked=!!ctl.reveal}
+$("#facNav").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;facSec=b.dataset.f;$$("#facNav .chip").forEach(c=>c.setAttribute("aria-pressed",c===b));renderFac()});
+function renderFac(){
+  renderCtl();
+  ["mcq","open","people","plans"].forEach(x=>$("#f-"+x).classList.toggle("hidden",x!==facSec));
+  if(!admin){$("#f-"+facSec).innerHTML=`<p class="muted">Loading…</p>`;return}
+  const R=admin.responses,n=R.length,K=admin.key.answers,W=admin.key.why;
+  if(facSec==="mcq"){
+    const avg=n?(R.reduce((s,r)=>s+(r.score||0),0)/n):0;
+    const pc=MCQ.map((m,i)=>n?R.filter(r=>r.mcq[i]===K[i]).length/n:0);
+    const hard=n?pc.indexOf(Math.min(...pc)):-1;
+    $("#f-mcq").innerHTML=`<div class="stats" style="margin-bottom:16px">
+      <div class="card"><div class="stat">${n}</div><div class="muted">teachers submitted</div></div>
+      <div class="card"><div class="stat">${n?avg.toFixed(1):"–"}<span style="font-size:.45em"> / 7</span></div><div class="muted">average score</div></div>
+      <div class="card"><div class="stat">${hard>-1?"Q"+(hard+1):"–"}</div><div class="muted">${hard>-1?"hardest question ("+Math.round(pc[hard]*100)+"% correct)":"hardest question"}</div></div></div>
+      ${n?"":`<div class="banner">No answers yet. Results appear here as teachers submit (refreshes every 5 seconds).</div>`}`+
+      MCQ.map((m,i)=>`<div class="card"><h3><span class="qn">${i+1}.</span>${esc(m.q)} <span class="muted">· ${Math.round(pc[i]*100)}% correct</span></h3>${m.o.map((o,j)=>{const c=R.filter(r=>r.mcq[i]===j).length,p=n?Math.round(c/n*100):0;
+        return `<div class="bar"><div class="track"><div class="fill ${j===K[i]?"c":""}" style="width:${p}%"></div><span>${j===K[i]?"✓ ":""}${esc(o)}</span></div><div class="pct">${c}</div></div>`}).join("")}<div class="why">${esc(W[i])}</div></div>`).join("");
+  }
+  if(facSec==="open"){
+    const list=R.filter(r=>(openG==="all"||r.group===openG)&&String(r.open[openQ]||"").trim());
+    $("#f-open").innerHTML=`<div class="card"><div class="seg">${OPEN.map((q,i)=>`<button class="chip" data-q="${i}" aria-pressed="${i===openQ}">Question ${MCQ.length+i+1}</button>`).join("")}</div>
+      <h2 style="margin-top:14px">${esc(OPEN[openQ])}</h2>
+      <div class="seg" style="margin-top:10px"><button class="chip" data-g="all" aria-pressed="${openG==="all"}">All groups</button>${GROUPS.map(g=>`<button class="chip" data-g="${g.id}" aria-pressed="${openG===g.id}">${esc(g.name)}</button>`).join("")}</div>
+      <p class="muted" style="margin:10px 0 0">${list.length} answer${list.length===1?"":"s"}</p></div>
+      <div class="wall">${list.map(r=>`<div class="note"><b>${esc(r.name)} · ${esc(gName(r.group))}</b>${esc(r.open[openQ])}</div>`).join("")||`<p class="muted">No answers yet.</p>`}</div>`;
+  }
+  if(facSec==="people"){
+    const s=[...R].sort((a,b)=>(a.group||"").localeCompare(b.group||"")||(a.name||"").localeCompare(b.name||""));
+    $("#f-people").innerHTML=`<div class="card"><h2>Who has submitted (${n})</h2><table class="stack"><thead><tr><th>Name</th><th>Group</th><th class="n">Score</th><th>Time</th></tr></thead><tbody>${s.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(gName(r.group))}</td><td class="n">${esc(r.score)}/7</td><td>${r.at?esc(new Date(r.at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})):""}</td></tr>`).join("")}</tbody></table>${n?"":`<p class="muted">No submissions yet.</p>`}</div>`;
+  }
+  if(facSec==="plans"){
+    const filled=g=>FIELDS.filter(f=>plans[g+"__"+f.id]&&String(plans[g+"__"+f.id].text).trim()).length;
+    $("#f-plans").innerHTML=`<div class="card"><div class="seg">${GROUPS.map(g=>`<button class="chip" data-pg="${g.id}" aria-pressed="${planG===g.id}">${esc(g.name)} <small>${filled(g.id)}/${FIELDS.length} boxes</small></button>`).join("")}</div></div>
+      <div class="card planview"><h2>${esc(gName(planG))}: pilot lesson plan</h2>${FIELDS.map((f,i)=>{const d=plans[planG+"__"+f.id];return `<div class="pf"><h3>${i+1}. ${esc(f.label)}</h3><div>${d&&String(d.text).trim()?esc(d.text):'<span class="muted">Not filled in yet</span>'}</div></div>`}).join("")}</div>`;
+  }
+}
+$("#f-open").addEventListener("click",e=>{const q=e.target.closest("[data-q]"),g=e.target.closest("[data-g]");if(q){openQ=+q.dataset.q;renderFac()}if(g){openG=g.dataset.g;renderFac()}});
+$("#f-plans").addEventListener("click",e=>{const b=e.target.closest("[data-pg]");if(b){planG=b.dataset.pg;renderFac()}});
+
+/* ---------- boot ---------- */
+const saved=LS.get("mapw_ans");if(saved&&Array.isArray(saved.mcq)&&saved.mcq.length===MCQ.length)ans=saved;
+submitted=!!LS.get("mapw_sub");
+if(submitted)$("#subMsg").textContent="You've already submitted. You can edit and update.";
+renderJoin();show(me.name?"p1":"join");
+pollState();
+}
+</script>
+</body>
+</html>
